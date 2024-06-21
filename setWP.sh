@@ -7,7 +7,6 @@ old=$wallpaper_d/old.jpg # the previous wallpaper
 # variable overrides
 # wallpaper_d=test
 
-
 if [[ ! -d $wallpaper_d ]] ; then
     echo "Wallpaper directory doesn't exist.. repairing!"
     while true; do
@@ -22,7 +21,19 @@ if [[ ! -d $wallpaper_d ]] ; then
         fi
     done
 fi
+infoTXT="""Information:
+If you want to manyally change the wallpaper, either add this to ~/.xsession
 
+\"while true; do; feh --bg-color ~/.config/wallpapers/latest.jpg ; done &\"
+
+When you have this added, you can manually change the picture, by moving it to ~/.config/wallpapers/latest.jpg
+or run this script with arguments add rel/path/to/picture.jpg
+"""
+
+infoWP=$wallpaper_d/info.txt
+touch $infoWP &> /dev/null
+echo $infoTXT > $infoWP
+echo "Added information to $infoWP"
 
 if [[ $1 ]] ; then
     
@@ -45,13 +56,9 @@ if [[ $1 ]] ; then
             echo "Failed to install the wallpaper"
             exit
         fi
-
-
-
     fi
 else
     echo "no option was entered, please enter one of the following"
     echo "add"
 
 fi
-
