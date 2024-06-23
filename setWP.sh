@@ -22,12 +22,13 @@ if [[ ! -d $wallpaper_d ]] ; then
     done
 fi
 infoTXT="""Information:
-If you want to manyally change the wallpaper, either add this to ~/.xsession
+If you want to manually change the wallpaper, either add this to ~/.xsession
 
 \"while true; do; feh --bg-color ~/.config/wallpapers/latest.jpg ; done &\"
 
-When you have this added, you can manually change the picture, by moving it to ~/.config/wallpapers/latest.jpg
-or run this script with arguments add rel/path/to/picture.jpg
+When you have this added, you can manually change the picture, 
+    by moving it to ~/.config/wallpapers/latest.jpg
+    or run this script with arguments 'add rel/path/to/picture.jpg'
 """
 
 infoWP=$wallpaper_d/info.txt
@@ -38,9 +39,10 @@ echo "Added information to $infoWP"
 if [[ $1 ]] ; then
     
     if [[ "$1" == "add" ]] ; then
-        if [[ ( ! "$2" ) && ( ! -f "$2" ) ]]; then
+
+        if ( [ ! "$2" ] || [ ! -f "$2" ] ); then
             echo "No valid file given"
-            exit
+            exit 1
         fi
         picPath=$(realpath $2)
     
@@ -54,11 +56,11 @@ if [[ $1 ]] ; then
             feh --bg-scale $latest
         else
             echo "Failed to install the wallpaper"
-            exit
+            exit 1
         fi
     fi
 else
     echo "no option was entered, please enter one of the following"
     echo "add"
-
+    exit 1
 fi
