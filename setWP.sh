@@ -69,10 +69,13 @@ f_switch () {
     if [[ -f $latest && -f $old ]] ; then
 
         local latest_temp="${latest}TEMP"
-        mv $latest $latest_temp  && echo "first"
-        mv $old $latest && echo "second"
-        mv $latest_temp $old && echo "third"
-        echo "success?"
+        if mv $latest $latest_temp  && mv $old $latest && mv $latest_temp $old ; then
+            echo "Successfully switched the old and latest wallpapers"
+        else
+            echo "Failed"
+            exit 1
+        fi
+        return 0
     else
         echo "There are not enough files to switch the wallpaper"
         echo "Please run again with argument:"
@@ -104,6 +107,9 @@ case "$1" in
     "switch")
         f_switch
     ;;
-
+    *)
+        echo "That is not an option"
+        exit 1
+    ;;
 esac
 
