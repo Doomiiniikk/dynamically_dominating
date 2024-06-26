@@ -4,23 +4,83 @@ wallpaper_d=~/.config/wallpapers
 latest=$wallpaper_d/latest.jpg # the current wallpaper
 old=$wallpaper_d/old.jpg # the previous wallpaper
 
-# variable overrides
-# wallpaper_d=test
 
-if [[ ! -d $wallpaper_d ]] ; then
-    echo "Wallpaper directory doesn't exist.. repairing!"
-    while true; do
-        if ! mkdir $wallpaper_d &> /dev/null ; then
-            if [[ -f $wallpaper_d ]] ; then
-                echo "Can't create wallpaper directory because it is a file.. fixing"
-                mv $wallpaper_d "${wallpaper_d}_FILE"
-            fi
-        else
-            echo "Created wallpaper directory"
-            break
-        fi
-    done
-fi
+make_wallpaper () {
+
+    if [ ! $1 ] ; then 
+        return 1 
+    fi
+
+    if [[ -d $1 ]] ; then
+
+        echo "Wallpaper directory exists"
+        return 0
+
+    elif [[ -f $1 ]] ; then 
+
+        echo "Given parameter is a file, not a directory"
+        mv $1 "$1_FILE" && echo "Moved given parameter to '$1_FILE'"
+
+    else 
+
+        echo "Directory doesn't exist"
+    fi
+
+    if mkdir $1 &> /dev/null ; then
+        echo "Created the directory"
+    else
+        echo "Failed to create the directory"
+        exit 1
+    fi
+
+    return 0
+}
+
+
+
+f_add () {
+    
+    if ( [ ! $1 ] || [ ! -f $1 ] ) ; then
+        echo "No valid file given!"
+        return 1
+    fi
+
+    local filePath=$(realpath $1) # the file to be added
+
+    if [[ -f $latest ]] ; then
+        echo "backing up the current wallpaper"
+        mv $latest $old
+    fi
+    echo $filePath 
+    echo $latest
+    if cp $filePath $latest &> /dev/null ; then
+        echo "Successfully installed the wallpaper"
+        feh --bg-scale $latest
+    else
+        echo "Failed to install the wallpaper"
+        return 1
+    fi
+
+    return 0
+}
+
+f_switch () {
+    
+    if [[ -f $latest && -f $old ]] ; then
+
+        local latest_temp="${latest}TEMP"
+        mv $latest $latest_temp  && echo "first"
+        mv $old $latest && echo "second"
+        mv $latest_temp $old && echo "third"
+        echo "success?"
+    else
+        echo "There are not enough files to switch the wallpaper"
+        echo "Please run again with argument:"
+        echo "    add /path/to/picture"
+    fi
+}
+
+
 infoTXT="""Information:
 If you want to manually change the wallpaper, either add this to ~/.xsession
 
@@ -36,31 +96,14 @@ touch $infoWP &> /dev/null
 echo $infoTXT > $infoWP
 echo "Added information to $infoWP"
 
-if [[ $1 ]] ; then
-    
-    if [[ "$1" == "add" ]] ; then
+case "$1" in
 
-        if ( [ ! "$2" ] || [ ! -f "$2" ] ); then
-            echo "No valid file given"
-            exit 1
-        fi
-        picPath=$(realpath $2)
-    
-        if [[ -f $latest ]] ; then
-            echo "backing up the current wallpaper"
-            mv $latest $old
-        fi
-        
-        if cp $picPath $latest &> /dev/null ; then
-            echo "Successfully installed the wallpaper"
-            feh --bg-scale $latest
-        else
-            echo "Failed to install the wallpaper"
-            exit 1
-        fi
-    fi
-else
-    echo "no option was entered, please enter one of the following"
-    echo "add"
-    exit 1
-fi
+    "add")
+        f_add "$2"
+    ;;
+    "switch")
+        f_switch
+    ;;
+
+esac
+
